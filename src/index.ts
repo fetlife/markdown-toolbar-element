@@ -14,6 +14,7 @@ declare global {
     MarkdownTaskListButtonElement: typeof MarkdownTaskListButtonElement
     MarkdownMentionButtonElement: typeof MarkdownMentionButtonElement
     MarkdownRefButtonElement: typeof MarkdownRefButtonElement
+    MarkdownLineBreakButtonElement: typeof MarkdownLineBreakButtonElement
   }
   interface HTMLElementTagNameMap {
     'markdown-toolbar': MarkdownToolbarElement
@@ -30,6 +31,7 @@ declare global {
     'md-task-list': MarkdownTaskListButtonElement
     'md-mention': MarkdownMentionButtonElement
     'md-ref': MarkdownRefButtonElement
+    'md-line-break': MarkdownLineBreakButtonElement
   }
 }
 
@@ -47,7 +49,8 @@ const buttonSelectors = [
   'md-ordered-list',
   'md-task-list',
   'md-mention',
-  'md-ref'
+  'md-ref',
+  'md-line-break'
 ]
 function getButtons(toolbar: Element): HTMLElement[] {
   const els = []
@@ -312,6 +315,18 @@ class MarkdownRefButtonElement extends MarkdownButtonElement {
 if (!window.customElements.get('md-ref')) {
   window.MarkdownRefButtonElement = MarkdownRefButtonElement
   window.customElements.define('md-ref', MarkdownRefButtonElement)
+}
+
+class MarkdownLineBreakButtonElement extends MarkdownButtonElement {
+  constructor() {
+    super()
+    styles.set(this, {prefix: '---', surroundWithNewlines: true})
+  }
+}
+
+if (!window.customElements.get('md-line-break')) {
+  window.MarkdownLineBreakButtonElement = MarkdownLineBreakButtonElement
+  window.customElements.define('md-line-break', MarkdownLineBreakButtonElement)
 }
 
 const modifierKey = navigator.userAgent.match(/Macintosh/) ? 'Meta' : 'Control'

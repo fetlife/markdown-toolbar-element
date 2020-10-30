@@ -14,6 +14,7 @@ declare global {
         MarkdownTaskListButtonElement: typeof MarkdownTaskListButtonElement;
         MarkdownMentionButtonElement: typeof MarkdownMentionButtonElement;
         MarkdownRefButtonElement: typeof MarkdownRefButtonElement;
+        MarkdownLineBreakButtonElement: typeof MarkdownLineBreakButtonElement;
     }
     interface HTMLElementTagNameMap {
         'markdown-toolbar': MarkdownToolbarElement;
@@ -30,6 +31,7 @@ declare global {
         'md-task-list': MarkdownTaskListButtonElement;
         'md-mention': MarkdownMentionButtonElement;
         'md-ref': MarkdownRefButtonElement;
+        'md-line-break': MarkdownLineBreakButtonElement;
     }
 }
 declare type Style = {
@@ -95,6 +97,9 @@ declare class MarkdownMentionButtonElement extends MarkdownButtonElement {
     constructor();
 }
 declare class MarkdownRefButtonElement extends MarkdownButtonElement {
+    constructor();
+}
+declare class MarkdownLineBreakButtonElement extends MarkdownButtonElement {
     constructor();
 }
 declare class MarkdownToolbarElement extends HTMLElement {
