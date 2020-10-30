@@ -3,6 +3,7 @@ const buttonSelectors = [
     'md-header',
     'md-bold',
     'md-italic',
+    'md-strike',
     'md-quote',
     'md-code',
     'md-link',
@@ -90,7 +91,7 @@ if (!window.customElements.get('md-bold')) {
 class MarkdownItalicButtonElement extends MarkdownButtonElement {
     constructor() {
         super();
-        styles.set(this, { prefix: '_', suffix: '_', trimFirst: true });
+        styles.set(this, { prefix: '*', suffix: '*', trimFirst: true });
     }
     connectedCallback() {
         super.connectedCallback();
@@ -100,6 +101,20 @@ class MarkdownItalicButtonElement extends MarkdownButtonElement {
 if (!window.customElements.get('md-italic')) {
     window.MarkdownItalicButtonElement = MarkdownItalicButtonElement;
     window.customElements.define('md-italic', MarkdownItalicButtonElement);
+}
+class MarkdownStrikeButtonElement extends MarkdownButtonElement {
+    constructor() {
+        super();
+        styles.set(this, { prefix: '~~', suffix: '~~', trimFirst: true });
+    }
+    connectedCallback() {
+        super.connectedCallback();
+        this.setAttribute('hotkey', 'u');
+    }
+}
+if (!window.customElements.get('md-strike')) {
+    window.MarkdownStrikeButtonElement = MarkdownStrikeButtonElement;
+    window.customElements.define('md-strike', MarkdownStrikeButtonElement);
 }
 class MarkdownQuoteButtonElement extends MarkdownButtonElement {
     constructor() {

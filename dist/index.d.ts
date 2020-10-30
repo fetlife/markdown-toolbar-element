@@ -4,6 +4,7 @@ declare global {
         MarkdownHeaderButtonElement: typeof MarkdownHeaderButtonElement;
         MarkdownBoldButtonElement: typeof MarkdownBoldButtonElement;
         MarkdownItalicButtonElement: typeof MarkdownItalicButtonElement;
+        MarkdownStrikeButtonElement: typeof MarkdownStrikeButtonElement;
         MarkdownQuoteButtonElement: typeof MarkdownQuoteButtonElement;
         MarkdownCodeButtonElement: typeof MarkdownCodeButtonElement;
         MarkdownLinkButtonElement: typeof MarkdownLinkButtonElement;
@@ -19,6 +20,7 @@ declare global {
         'md-header': MarkdownHeaderButtonElement;
         'md-bold': MarkdownBoldButtonElement;
         'md-italic': MarkdownItalicButtonElement;
+        'md-strike': MarkdownStrikeButtonElement;
         'md-quote': MarkdownQuoteButtonElement;
         'md-code': MarkdownCodeButtonElement;
         'md-link': MarkdownLinkButtonElement;
@@ -43,6 +45,10 @@ declare class MarkdownBoldButtonElement extends MarkdownButtonElement {
     connectedCallback(): void;
 }
 declare class MarkdownItalicButtonElement extends MarkdownButtonElement {
+    constructor();
+    connectedCallback(): void;
+}
+declare class MarkdownStrikeButtonElement extends MarkdownButtonElement {
     constructor();
     connectedCallback(): void;
 }

@@ -4,6 +4,7 @@ declare global {
     MarkdownHeaderButtonElement: typeof MarkdownHeaderButtonElement
     MarkdownBoldButtonElement: typeof MarkdownBoldButtonElement
     MarkdownItalicButtonElement: typeof MarkdownItalicButtonElement
+    MarkdownStrikeButtonElement: typeof MarkdownStrikeButtonElement
     MarkdownQuoteButtonElement: typeof MarkdownQuoteButtonElement
     MarkdownCodeButtonElement: typeof MarkdownCodeButtonElement
     MarkdownLinkButtonElement: typeof MarkdownLinkButtonElement
@@ -19,6 +20,7 @@ declare global {
     'md-header': MarkdownHeaderButtonElement
     'md-bold': MarkdownBoldButtonElement
     'md-italic': MarkdownItalicButtonElement
+    'md-strike': MarkdownStrikeButtonElement
     'md-quote': MarkdownQuoteButtonElement
     'md-code': MarkdownCodeButtonElement
     'md-link': MarkdownLinkButtonElement
@@ -36,6 +38,7 @@ const buttonSelectors = [
   'md-header',
   'md-bold',
   'md-italic',
+  'md-strike',
   'md-quote',
   'md-code',
   'md-link',
@@ -147,7 +150,7 @@ if (!window.customElements.get('md-bold')) {
 class MarkdownItalicButtonElement extends MarkdownButtonElement {
   constructor() {
     super()
-    styles.set(this, {prefix: '_', suffix: '_', trimFirst: true})
+    styles.set(this, {prefix: '*', suffix: '*', trimFirst: true})
   }
 
   connectedCallback() {
@@ -159,6 +162,23 @@ class MarkdownItalicButtonElement extends MarkdownButtonElement {
 if (!window.customElements.get('md-italic')) {
   window.MarkdownItalicButtonElement = MarkdownItalicButtonElement
   window.customElements.define('md-italic', MarkdownItalicButtonElement)
+}
+
+class MarkdownStrikeButtonElement extends MarkdownButtonElement {
+  constructor() {
+    super()
+    styles.set(this, {prefix: '~~', suffix: '~~', trimFirst: true})
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    this.setAttribute('hotkey', 'u')
+  }
+}
+
+if (!window.customElements.get('md-strike')) {
+  window.MarkdownStrikeButtonElement = MarkdownStrikeButtonElement
+  window.customElements.define('md-strike', MarkdownStrikeButtonElement)
 }
 
 class MarkdownQuoteButtonElement extends MarkdownButtonElement {
