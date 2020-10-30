@@ -32,13 +32,29 @@ declare global {
         'md-ref': MarkdownRefButtonElement;
     }
 }
+declare type Style = {
+    prefix?: string;
+    suffix?: string;
+    trimFirst?: boolean;
+    multiline?: boolean;
+    surroundWithNewlines?: boolean;
+    blockPrefix?: string;
+    blockSuffix?: string;
+    replaceNext?: string;
+    scanFor?: string;
+    orderedList?: boolean;
+    prefixSpace?: boolean;
+};
 declare class MarkdownButtonElement extends HTMLElement {
     constructor();
     connectedCallback(): void;
     click(): void;
+    getStyle(): Style | undefined;
 }
 declare class MarkdownHeaderButtonElement extends MarkdownButtonElement {
     constructor();
+    setStyle(): void;
+    getStyle(): Style | undefined;
 }
 declare class MarkdownBoldButtonElement extends MarkdownButtonElement {
     constructor();

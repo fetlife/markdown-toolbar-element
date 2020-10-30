@@ -88,7 +88,7 @@ class MarkdownButtonElement extends HTMLElement {
   constructor() {
     super()
     const apply = () => {
-      const style = styles.get(this)
+      const style = this.getStyle()
       if (!style) return
       applyStyle(this, style)
     }
@@ -103,9 +103,13 @@ class MarkdownButtonElement extends HTMLElement {
   }
 
   click() {
-    const style = styles.get(this)
+    const style = this.getStyle()
     if (!style) return
     applyStyle(this, style)
+  }
+
+  getStyle() {
+    return styles.get(this)
   }
 }
 
@@ -113,6 +117,10 @@ class MarkdownHeaderButtonElement extends MarkdownButtonElement {
   constructor() {
     super()
 
+    this.setStyle()
+  }
+
+  setStyle() {
     const level = parseInt(this.getAttribute('level') || '3', 10)
     if (level < 1 || level > 6) {
       return
@@ -122,6 +130,13 @@ class MarkdownHeaderButtonElement extends MarkdownButtonElement {
     styles.set(this, {
       prefix
     })
+  }
+
+  getStyle() {
+    // style is set in real time to fetch level attribute
+    this.setStyle()
+
+    return styles.get(this)
   }
 }
 
