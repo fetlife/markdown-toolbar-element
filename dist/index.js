@@ -73,7 +73,8 @@ class MarkdownHeaderButtonElement extends MarkdownButtonElement {
         }
         const prefix = `${'#'.repeat(level)} `;
         styles.set(this, {
-            prefix
+            prefix,
+            isHeader: true
         });
     }
     getStyle() {
@@ -343,6 +344,13 @@ function isMultipleLines(string) {
 function repeat(string, n) {
     return Array(n + 1).join(string);
 }
+function lineSelectionStart(text, i) {
+    let index = i;
+    while (text[index - 1] != null && !text[index - 1].match(/\n/)) {
+        index--;
+    }
+    return index;
+}
 function wordSelectionStart(text, i) {
     let index = i;
     while (text[index] && text[index - 1] != null && !text[index - 1].match(/\s/)) {
@@ -411,8 +419,12 @@ function styleSelectedText(textarea, styleArgs) {
     }
     insertText(textarea, result);
 }
-function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = false) {
-    if (textarea.selectionStart === textarea.selectionEnd) {
+function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = false, isHeader = false) {
+    if (isHeader) {
+        textarea.selectionStart = lineSelectionStart(textarea.value, textarea.selectionStart);
+        textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
+    }
+    else if (textarea.selectionStart === textarea.selectionEnd) {
         textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart);
         textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
     }
@@ -466,7 +478,7 @@ function blockStyle(textarea, arg) {
             prefixToUse = ` ${prefixToUse}`;
         }
     }
-    selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, arg.multiline);
+    selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, arg.multiline, arg.isHeader);
     let selectionStart = textarea.selectionStart;
     let selectionEnd = textarea.selectionEnd;
     const hasReplaceNext = replaceNext.length > 0 && suffixToUse.indexOf(replaceNext) > -1 && selectedText.length > 0;
@@ -491,9 +503,17 @@ function blockStyle(textarea, arg) {
         return { text: replacementText, selectionStart, selectionEnd };
     }
     else if (!hasReplaceNext) {
+        let selectionOffset = 0;
+        if (arg.isHeader) {
+            const matchesHeader = selectedText.match(/^(#{1,6}) /);
+            if (matchesHeader) {
+                selectedText = selectedText.slice(matchesHeader[0].length);
+                selectionOffset = matchesHeader[0].length;
+            }
+        }
         let replacementText = prefixToUse + selectedText + suffixToUse;
-        selectionStart = originalSelectionStart + prefixToUse.length;
-        selectionEnd = originalSelectionEnd + prefixToUse.length;
+        selectionStart = originalSelectionStart + prefixToUse.length - selectionOffset;
+        selectionEnd = originalSelectionEnd + prefixToUse.length - selectionOffset;
         const whitespaceEdges = selectedText.match(/^\s*|\s*$/g);
         if (arg.trimFirst && whitespaceEdges) {
             const leadingWhitespace = whitespaceEdges[0] || '';
@@ -604,7 +624,8 @@ function applyStyle(button, stylesToApply) {
         scanFor: '',
         surroundWithNewlines: false,
         orderedList: false,
-        trimFirst: false
+        trimFirst: false,
+        isHeader: false
     };
     const style = Object.assign(Object.assign({}, defaults), stylesToApply);
     const field = toolbar.field;

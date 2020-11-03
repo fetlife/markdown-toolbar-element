@@ -46,6 +46,7 @@ declare type Style = {
     scanFor?: string;
     orderedList?: boolean;
     prefixSpace?: boolean;
+    isHeader?: boolean;
 };
 declare class MarkdownButtonElement extends HTMLElement {
     constructor();
