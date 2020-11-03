@@ -472,16 +472,19 @@ function blockStyle(textarea, arg) {
     let selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
     let prefixToUse = isMultipleLines(selectedText) && blockPrefix.length > 0 ? `${blockPrefix}\n` : prefix;
     let suffixToUse = isMultipleLines(selectedText) && blockSuffix.length > 0 ? `\n${blockSuffix}` : suffix;
+    const hasReplaceNext = replaceNext.length > 0 && suffixToUse.indexOf(replaceNext) > -1 && selectedText.length > 0;
     if (prefixSpace) {
         const beforeSelection = textarea.value[textarea.selectionStart - 1];
         if (textarea.selectionStart !== 0 && beforeSelection != null && !beforeSelection.match(/\s/)) {
             prefixToUse = ` ${prefixToUse}`;
         }
     }
+    if (hasReplaceNext && selectedText === replaceNext) {
+        textarea.selectionStart = textarea.selectionEnd;
+    }
     selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, arg.multiline, arg.isHeader);
     let selectionStart = textarea.selectionStart;
     let selectionEnd = textarea.selectionEnd;
-    const hasReplaceNext = replaceNext.length > 0 && suffixToUse.indexOf(replaceNext) > -1 && selectedText.length > 0;
     if (surroundWithNewlines) {
         const ref = newlinesToSurroundSelectedText(textarea);
         newlinesToAppend = ref.newlinesToAppend;
