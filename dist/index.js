@@ -582,7 +582,7 @@ function orderedList(textarea) {
     if (undoStyling) {
         lines = linesToUnstyle.map(line => line.replace(orderedListRegex, ''));
         text = lines.join('\n');
-        if (noInitialSelection && startOfLine && endOfLine) {
+        if (noInitialSelection && startOfLine != null && endOfLine != null) {
             const lengthDiff = linesToUnstyle[0].length - lines[0].length;
             selectionStart = selectionEnd = textarea.selectionStart - lengthDiff;
             textarea.selectionStart = startOfLine;
