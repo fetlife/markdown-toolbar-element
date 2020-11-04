@@ -633,7 +633,11 @@ function blockStyle(textarea: HTMLTextAreaElement, arg: StyleArgs): SelectionRan
     suffixToUse += newlinesToPrepend
   }
 
-  if (selectedText.startsWith(prefixToUse) && selectedText.endsWith(suffixToUse)) {
+  if (
+    selectedText.startsWith(prefixToUse) &&
+    selectedText.endsWith(suffixToUse) &&
+    selectedText.length >= prefixToUse.length + suffixToUse.length
+  ) {
     const replacementText = selectedText.slice(prefixToUse.length, selectedText.length - suffixToUse.length)
     if (originalSelectionStart === originalSelectionEnd) {
       let position = originalSelectionStart - prefixToUse.length
