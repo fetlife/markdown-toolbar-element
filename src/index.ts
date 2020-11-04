@@ -472,6 +472,16 @@ function wordSelectionEnd(text: string, i: number, multiline: boolean): number {
   return index
 }
 
+function selectionIsItalic(textarea: HTMLTextAreaElement) {
+  const textValue = textarea.value.slice(
+    wordSelectionStart(textarea.value, textarea.selectionStart),
+    wordSelectionEnd(textarea.value, textarea.selectionEnd, false)
+  )
+
+  // checking for both italic-only (*) and italic+bold (***) surrouding
+  return textValue.match(/(^\*{1}[^*]*\*{1}$)|(^\*{3}[^*]*\*{3}$)/)
+}
+
 let canInsertText: boolean | null = null
 
 function insertText(textarea: HTMLTextAreaElement, {text, selectionStart, selectionEnd}: SelectionRange) {
@@ -636,7 +646,8 @@ function blockStyle(textarea: HTMLTextAreaElement, arg: StyleArgs): SelectionRan
   if (
     selectedText.startsWith(prefixToUse) &&
     selectedText.endsWith(suffixToUse) &&
-    selectedText.length >= prefixToUse.length + suffixToUse.length
+    selectedText.length >= prefixToUse.length + suffixToUse.length &&
+    (prefixToUse !== '*' || selectionIsItalic(textarea)) // italic edge-case
   ) {
     const replacementText = selectedText.slice(prefixToUse.length, selectedText.length - suffixToUse.length)
     if (originalSelectionStart === originalSelectionEnd) {

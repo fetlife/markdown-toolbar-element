@@ -366,6 +366,10 @@ function wordSelectionEnd(text, i, multiline) {
     }
     return index;
 }
+function selectionIsItalic(textarea) {
+    const textValue = textarea.value.slice(wordSelectionStart(textarea.value, textarea.selectionStart), wordSelectionEnd(textarea.value, textarea.selectionEnd, false));
+    return textValue.match(/(^\*{1}[^*]*\*{1}$)|(^\*{3}[^*]*\*{3}$)/);
+}
 let canInsertText = null;
 function insertText(textarea, { text, selectionStart, selectionEnd }) {
     const originalSelectionStart = textarea.selectionStart;
@@ -494,7 +498,8 @@ function blockStyle(textarea, arg) {
     }
     if (selectedText.startsWith(prefixToUse) &&
         selectedText.endsWith(suffixToUse) &&
-        selectedText.length >= prefixToUse.length + suffixToUse.length) {
+        selectedText.length >= prefixToUse.length + suffixToUse.length &&
+        (prefixToUse !== '*' || selectionIsItalic(textarea))) {
         const replacementText = selectedText.slice(prefixToUse.length, selectedText.length - suffixToUse.length);
         if (originalSelectionStart === originalSelectionEnd) {
             let position = originalSelectionStart - prefixToUse.length;
