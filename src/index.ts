@@ -84,6 +84,7 @@ type Style = {
   orderedList?: boolean
   prefixSpace?: boolean
   isHeader?: boolean
+  isLineBreak?: boolean
 }
 
 const styles = new WeakMap<Element, Style>()
@@ -322,7 +323,7 @@ if (!window.customElements.get('md-ref')) {
 class MarkdownLineBreakButtonElement extends MarkdownButtonElement {
   constructor() {
     super()
-    styles.set(this, {prefix: '---', surroundWithNewlines: true})
+    styles.set(this, {suffix: '---', isLineBreak: true})
   }
 }
 
@@ -545,11 +546,16 @@ function expandSelectedText(
   prefixToUse: string,
   suffixToUse: string,
   multiline = false,
-  isHeader = false
+  isHeader = false,
+  isLineBreak = false
 ): string {
   if (isHeader) {
     textarea.selectionStart = lineSelectionStart(textarea.value, textarea.selectionStart)
     textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline)
+  } else if (isLineBreak) {
+    textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline)
+    // setting selection to same cursor in line break
+    textarea.selectionStart = textarea.selectionEnd
   } else if (textarea.selectionStart === textarea.selectionEnd) {
     textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart)
     textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline)
@@ -632,7 +638,7 @@ function blockStyle(textarea: HTMLTextAreaElement, arg: StyleArgs): SelectionRan
     textarea.selectionStart = textarea.selectionEnd
   }
 
-  selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, arg.multiline, arg.isHeader)
+  selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, arg.multiline, arg.isHeader, arg.isLineBreak)
   let selectionStart = textarea.selectionStart
   let selectionEnd = textarea.selectionEnd
   if (surroundWithNewlines) {
@@ -640,6 +646,13 @@ function blockStyle(textarea: HTMLTextAreaElement, arg: StyleArgs): SelectionRan
     newlinesToAppend = ref.newlinesToAppend
     newlinesToPrepend = ref.newlinesToPrepend
     prefixToUse = newlinesToAppend + prefix
+    suffixToUse += newlinesToPrepend
+  }
+  if (arg.isLineBreak) {
+    const ref = newlinesToSurroundSelectedText(textarea)
+    newlinesToAppend = ref.newlinesToAppend
+    newlinesToPrepend = ref.newlinesToPrepend
+    suffixToUse = newlinesToAppend + suffix
     suffixToUse += newlinesToPrepend
   }
 
@@ -680,6 +693,11 @@ function blockStyle(textarea: HTMLTextAreaElement, arg: StyleArgs): SelectionRan
       replacementText = leadingWhitespace + prefixToUse + selectedText.trim() + suffixToUse + trailingWhitespace
       selectionStart += leadingWhitespace.length
       selectionEnd -= trailingWhitespace.length
+    }
+    // line break edge-case: setting cursor to end of selection
+    if (arg.isLineBreak) {
+      selectionEnd += suffixToUse.length
+      selectionStart = selectionEnd
     }
     return {text: replacementText, selectionStart, selectionEnd}
   } else if (scanFor.length > 0 && selectedText.match(scanFor)) {
@@ -772,6 +790,7 @@ interface StyleArgs {
   orderedList: boolean
   trimFirst: boolean
   isHeader: boolean
+  isLineBreak: boolean
 }
 
 function numberedLines(lines: string[]) {
@@ -802,7 +821,8 @@ function applyStyle(button: Element, stylesToApply: Style) {
     surroundWithNewlines: false,
     orderedList: false,
     trimFirst: false,
-    isHeader: false
+    isHeader: false,
+    isLineBreak: false
   }
 
   const style = {...defaults, ...stylesToApply}

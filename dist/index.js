@@ -229,7 +229,7 @@ if (!window.customElements.get('md-ref')) {
 class MarkdownLineBreakButtonElement extends MarkdownButtonElement {
     constructor() {
         super();
-        styles.set(this, { prefix: '---', surroundWithNewlines: true });
+        styles.set(this, { suffix: '---', isLineBreak: true });
     }
 }
 if (!window.customElements.get('md-line-break')) {
@@ -423,10 +423,14 @@ function styleSelectedText(textarea, styleArgs) {
     }
     insertText(textarea, result);
 }
-function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = false, isHeader = false) {
+function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = false, isHeader = false, isLineBreak = false) {
     if (isHeader) {
         textarea.selectionStart = lineSelectionStart(textarea.value, textarea.selectionStart);
         textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
+    }
+    else if (isLineBreak) {
+        textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
+        textarea.selectionStart = textarea.selectionEnd;
     }
     else if (textarea.selectionStart === textarea.selectionEnd) {
         textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart);
@@ -486,7 +490,7 @@ function blockStyle(textarea, arg) {
     if (hasReplaceNext && selectedText === replaceNext) {
         textarea.selectionStart = textarea.selectionEnd;
     }
-    selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, arg.multiline, arg.isHeader);
+    selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, arg.multiline, arg.isHeader, arg.isLineBreak);
     let selectionStart = textarea.selectionStart;
     let selectionEnd = textarea.selectionEnd;
     if (surroundWithNewlines) {
@@ -494,6 +498,13 @@ function blockStyle(textarea, arg) {
         newlinesToAppend = ref.newlinesToAppend;
         newlinesToPrepend = ref.newlinesToPrepend;
         prefixToUse = newlinesToAppend + prefix;
+        suffixToUse += newlinesToPrepend;
+    }
+    if (arg.isLineBreak) {
+        const ref = newlinesToSurroundSelectedText(textarea);
+        newlinesToAppend = ref.newlinesToAppend;
+        newlinesToPrepend = ref.newlinesToPrepend;
+        suffixToUse = newlinesToAppend + suffix;
         suffixToUse += newlinesToPrepend;
     }
     if (selectedText.startsWith(prefixToUse) &&
@@ -531,6 +542,10 @@ function blockStyle(textarea, arg) {
             replacementText = leadingWhitespace + prefixToUse + selectedText.trim() + suffixToUse + trailingWhitespace;
             selectionStart += leadingWhitespace.length;
             selectionEnd -= trailingWhitespace.length;
+        }
+        if (arg.isLineBreak) {
+            selectionEnd += suffixToUse.length;
+            selectionStart = selectionEnd;
         }
         return { text: replacementText, selectionStart, selectionEnd };
     }
@@ -635,7 +650,8 @@ function applyStyle(button, stylesToApply) {
         surroundWithNewlines: false,
         orderedList: false,
         trimFirst: false,
-        isHeader: false
+        isHeader: false,
+        isLineBreak: false
     };
     const style = Object.assign(Object.assign({}, defaults), stylesToApply);
     const field = toolbar.field;
