@@ -34,6 +34,7 @@ function keydown(fn) {
     };
 }
 const styles = new WeakMap();
+const formattingStyles = ['**', '*', '~~'];
 class MarkdownButtonElement extends HTMLElement {
     constructor() {
         super();
@@ -366,10 +367,6 @@ function wordSelectionEnd(text, i, multiline) {
     }
     return index;
 }
-function selectionIsItalic(textarea) {
-    const textValue = textarea.value.slice(wordSelectionStart(textarea.value, textarea.selectionStart), wordSelectionEnd(textarea.value, textarea.selectionEnd, false));
-    return textValue.match(/(^\*{1}[^*]*\*{1}$)|(^\*{3}[^*]*\*{3}$)/);
-}
 let canInsertText = null;
 function insertText(textarea, { text, selectionStart, selectionEnd }) {
     const originalSelectionStart = textarea.selectionStart;
@@ -424,6 +421,7 @@ function styleSelectedText(textarea, styleArgs) {
     insertText(textarea, result);
 }
 function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = false, isHeader = false, isLineBreak = false) {
+    const isFormatting = formattingStyles.includes(prefixToUse);
     if (isHeader) {
         textarea.selectionStart = lineSelectionStart(textarea.value, textarea.selectionStart);
         textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
@@ -435,6 +433,8 @@ function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = fals
     else if (textarea.selectionStart === textarea.selectionEnd) {
         textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart);
         textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
+        if (isFormatting)
+            expandTextFormatting(textarea, prefixToUse, false);
     }
     else {
         const expandedSelectionStart = textarea.selectionStart - prefixToUse.length;
@@ -445,8 +445,49 @@ function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = fals
             textarea.selectionStart = expandedSelectionStart;
             textarea.selectionEnd = expandedSelectionEnd;
         }
+        if (isFormatting)
+            expandTextFormatting(textarea, prefixToUse, true);
     }
     return textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+}
+function expandTextFormatting(textarea, formattingToUse, checkEdges) {
+    if (!formattingStyles.includes(formattingToUse))
+        return;
+    let matchesFormatting = false;
+    let formattingStart = textarea.selectionStart;
+    let formattingEnd = textarea.selectionEnd;
+    if (checkEdges) {
+        formattingStart = wordSelectionStart(textarea.value, formattingStart);
+        formattingEnd = wordSelectionEnd(textarea.value, formattingEnd, false);
+        if (!formattingStyles.some(item => textarea.value.slice(formattingStart).startsWith(item) &&
+            textarea.value.slice(0, formattingEnd).endsWith(item)))
+            return;
+    }
+    for (let i = 0; i < formattingStyles.length; i++) {
+        if (matchesFormatting)
+            break;
+        for (const item of formattingStyles) {
+            if (matchesFormatting)
+                break;
+            const prefixStart = formattingStart;
+            const prefixEnd = formattingStart + item.length;
+            const suffixStart = formattingEnd - item.length;
+            const suffixEnd = formattingEnd;
+            const beginsWithPrefix = textarea.value.slice(prefixStart, prefixEnd) === item;
+            const endsWithSuffix = textarea.value.slice(suffixStart, suffixEnd) === item;
+            if (!beginsWithPrefix || !endsWithSuffix)
+                continue;
+            if (item === formattingToUse) {
+                matchesFormatting = true;
+            }
+            else {
+                formattingStart += item.length;
+                formattingEnd += -item.length;
+            }
+        }
+    }
+    textarea.selectionStart = formattingStart;
+    textarea.selectionEnd = formattingEnd;
 }
 function newlinesToSurroundSelectedText(textarea) {
     const beforeSelection = textarea.value.slice(0, textarea.selectionStart);
@@ -509,8 +550,7 @@ function blockStyle(textarea, arg) {
     }
     if (selectedText.startsWith(prefixToUse) &&
         selectedText.endsWith(suffixToUse) &&
-        selectedText.length >= prefixToUse.length + suffixToUse.length &&
-        (prefixToUse !== '*' || selectionIsItalic(textarea))) {
+        selectedText.length >= prefixToUse.length + suffixToUse.length) {
         const replacementText = selectedText.slice(prefixToUse.length, selectedText.length - suffixToUse.length);
         if (originalSelectionStart === originalSelectionEnd) {
             let position = originalSelectionStart - prefixToUse.length;
