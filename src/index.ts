@@ -343,7 +343,7 @@ function onEnter(event: KeyboardEvent) {
 
   const textArea = event.target as HTMLTextAreaElement
   const line = textArea.value.slice(
-    lineSelectionStart(textArea.value, textArea.selectionStart),
+    wordSelectionStart(textArea.value, textArea.selectionStart, true),
     textArea.selectionStart
   )
 
@@ -496,17 +496,10 @@ function repeat(string: string, n: number): string {
   return Array(n + 1).join(string)
 }
 
-function lineSelectionStart(text: string, i: number): number {
+function wordSelectionStart(text: string, i: number, multiline: boolean): number {
   let index = i
-  while (text[index - 1] != null && !text[index - 1].match(/\n/)) {
-    index--
-  }
-  return index
-}
-
-function wordSelectionStart(text: string, i: number): number {
-  let index = i
-  while (text[index] && text[index - 1] != null && !text[index - 1].match(/\s/)) {
+  const breakpoint = multiline ? /\n/ : /\s/
+  while (text[index - 1] != null && !text[index - 1].match(breakpoint)) {
     index--
   }
   return index
@@ -590,14 +583,14 @@ function expandSelectedText(
   const isFormatting = formattingStyles.includes(prefixToUse)
 
   if (isHeader) {
-    textarea.selectionStart = lineSelectionStart(textarea.value, textarea.selectionStart)
+    textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart, true)
     textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline)
   } else if (isLineBreak) {
     textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline)
     // setting selection to same cursor in line break
     textarea.selectionStart = textarea.selectionEnd
   } else if (textarea.selectionStart === textarea.selectionEnd) {
-    textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart)
+    textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart, multiline)
     textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline)
 
     if (isFormatting) expandTextFormatting(textarea, prefixToUse, false)
@@ -624,7 +617,7 @@ function expandTextFormatting(textarea: HTMLTextAreaElement, formattingToUse: st
   let formattingEnd = textarea.selectionEnd
 
   if (checkEdges) {
-    formattingStart = wordSelectionStart(textarea.value, formattingStart)
+    formattingStart = wordSelectionStart(textarea.value, formattingStart, false)
     formattingEnd = wordSelectionEnd(textarea.value, formattingEnd, false)
 
     if (

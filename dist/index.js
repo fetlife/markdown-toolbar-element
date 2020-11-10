@@ -243,7 +243,7 @@ function onEnter(event) {
         return;
     }
     const textArea = event.target;
-    const line = textArea.value.slice(lineSelectionStart(textArea.value, textArea.selectionStart), textArea.selectionStart);
+    const line = textArea.value.slice(wordSelectionStart(textArea.value, textArea.selectionStart, true), textArea.selectionStart);
     let textToInsert, selectionStart, selectionEnd;
     if (line.trim().startsWith('- ')) {
         textToInsert = `\n${repeat(' ', line.search(/\S/))}- `;
@@ -382,16 +382,10 @@ function isMultipleLines(string) {
 function repeat(string, n) {
     return Array(n + 1).join(string);
 }
-function lineSelectionStart(text, i) {
+function wordSelectionStart(text, i, multiline) {
     let index = i;
-    while (text[index - 1] != null && !text[index - 1].match(/\n/)) {
-        index--;
-    }
-    return index;
-}
-function wordSelectionStart(text, i) {
-    let index = i;
-    while (text[index] && text[index - 1] != null && !text[index - 1].match(/\s/)) {
+    const breakpoint = multiline ? /\n/ : /\s/;
+    while (text[index - 1] != null && !text[index - 1].match(breakpoint)) {
         index--;
     }
     return index;
@@ -460,7 +454,7 @@ function styleSelectedText(textarea, styleArgs) {
 function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = false, isHeader = false, isLineBreak = false) {
     const isFormatting = formattingStyles.includes(prefixToUse);
     if (isHeader) {
-        textarea.selectionStart = lineSelectionStart(textarea.value, textarea.selectionStart);
+        textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart, true);
         textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
     }
     else if (isLineBreak) {
@@ -468,7 +462,7 @@ function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = fals
         textarea.selectionStart = textarea.selectionEnd;
     }
     else if (textarea.selectionStart === textarea.selectionEnd) {
-        textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart);
+        textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart, multiline);
         textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
         if (isFormatting)
             expandTextFormatting(textarea, prefixToUse, false);
@@ -494,7 +488,7 @@ function expandTextFormatting(textarea, formattingToUse, checkEdges) {
     let formattingStart = textarea.selectionStart;
     let formattingEnd = textarea.selectionEnd;
     if (checkEdges) {
-        formattingStart = wordSelectionStart(textarea.value, formattingStart);
+        formattingStart = wordSelectionStart(textarea.value, formattingStart, false);
         formattingEnd = wordSelectionEnd(textarea.value, formattingEnd, false);
         if (!formattingStyles.some(item => textarea.value.slice(formattingStart).startsWith(item) &&
             textarea.value.slice(0, formattingEnd).endsWith(item)))
