@@ -246,11 +246,23 @@ function onEnter(event) {
     const line = textArea.value.slice(lineSelectionStart(textArea.value, textArea.selectionStart), textArea.selectionStart);
     let textToInsert, selectionStart, selectionEnd;
     if (line.trim().startsWith('- ')) {
-        textToInsert = `\n${line.split('-')[0]}- `;
+        textToInsert = `\n${repeat(' ', line.search(/\S/))}- `;
         selectionStart = textArea.selectionStart + textToInsert.length;
         selectionEnd = textArea.selectionStart + textToInsert.length;
     }
     else if (line.trim() === '-') {
+        textArea.selectionStart = textArea.selectionStart - line.length;
+        textToInsert = `\n`;
+        selectionStart = textArea.selectionStart + textToInsert.length;
+        selectionEnd = textArea.selectionStart + textToInsert.length;
+    }
+    else if (line.match(/^\s*\d+\.\s+[^\s]+.*$/)) {
+        const listNumber = parseInt(line.trim().split('.')[0]) + 1;
+        textToInsert = `\n${repeat(' ', line.search(/\S/))}${listNumber}. `;
+        selectionStart = textArea.selectionStart + textToInsert.length;
+        selectionEnd = textArea.selectionStart + textToInsert.length;
+    }
+    else if (line.match(/^\s*\d+\.\s+$/)) {
         textArea.selectionStart = textArea.selectionStart - line.length;
         textToInsert = `\n`;
         selectionStart = textArea.selectionStart + textToInsert.length;

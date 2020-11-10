@@ -351,11 +351,23 @@ function onEnter(event: KeyboardEvent) {
 
   if (line.trim().startsWith('- ')) {
     // might be nested, adding the correct number of spaces
-    textToInsert = `\n${line.split('-')[0]}- `
+    textToInsert = `\n${repeat(' ', line.search(/\S/))}- `
     selectionStart = textArea.selectionStart + textToInsert.length
     selectionEnd = textArea.selectionStart + textToInsert.length
   } else if (line.trim() === '-') {
     // empty unordered list item, removing
+    textArea.selectionStart = textArea.selectionStart - line.length
+    textToInsert = `\n`
+    selectionStart = textArea.selectionStart + textToInsert.length
+    selectionEnd = textArea.selectionStart + textToInsert.length
+  } else if (line.match(/^\s*\d+\.\s+[^\s]+.*$/)) {
+    const listNumber = parseInt(line.trim().split('.')[0]) + 1
+    // might be nested, adding the correct number of spaces
+    textToInsert = `\n${repeat(' ', line.search(/\S/))}${listNumber}. `
+    selectionStart = textArea.selectionStart + textToInsert.length
+    selectionEnd = textArea.selectionStart + textToInsert.length
+  } else if (line.match(/^\s*\d+\.\s+$/)) {
+    // empty ordered list item, removing
     textArea.selectionStart = textArea.selectionStart - line.length
     textToInsert = `\n`
     selectionStart = textArea.selectionStart + textToInsert.length
