@@ -238,6 +238,30 @@ if (!window.customElements.get('md-line-break')) {
     window.customElements.define('md-line-break', MarkdownLineBreakButtonElement);
 }
 const modifierKey = navigator.userAgent.match(/Macintosh/) ? 'Meta' : 'Control';
+function onEnter(event) {
+    if (event.key !== 'Enter' && event.keyCode !== 13) {
+        return;
+    }
+    const textArea = event.target;
+    const line = textArea.value.slice(lineSelectionStart(textArea.value, textArea.selectionStart), textArea.selectionStart);
+    let textToInsert, selectionStart, selectionEnd;
+    if (line.trim().startsWith('- ')) {
+        textToInsert = `\n${line.split('-')[0]}- `;
+        selectionStart = textArea.selectionStart + textToInsert.length;
+        selectionEnd = textArea.selectionStart + textToInsert.length;
+    }
+    else if (line.trim() === '-') {
+        textArea.selectionStart = textArea.selectionStart - line.length;
+        textToInsert = `\n`;
+        selectionStart = textArea.selectionStart + textToInsert.length;
+        selectionEnd = textArea.selectionStart + textToInsert.length;
+    }
+    else {
+        return;
+    }
+    insertText(textArea, { text: textToInsert, selectionStart, selectionEnd });
+    event.preventDefault();
+}
 class MarkdownToolbarElement extends HTMLElement {
     constructor() {
         super();
@@ -250,6 +274,7 @@ class MarkdownToolbarElement extends HTMLElement {
         const fn = shortcut.bind(null, this);
         if (this.field) {
             this.field.addEventListener('keydown', fn);
+            this.field.addEventListener('keydown', onEnter);
             shortcutListeners.set(this, fn);
         }
         this.setAttribute('tabindex', '0');
@@ -469,12 +494,8 @@ function expandTextFormatting(textarea, formattingToUse, checkEdges) {
         for (const item of formattingStyles) {
             if (matchesFormatting)
                 break;
-            const prefixStart = formattingStart;
-            const prefixEnd = formattingStart + item.length;
-            const suffixStart = formattingEnd - item.length;
-            const suffixEnd = formattingEnd;
-            const beginsWithPrefix = textarea.value.slice(prefixStart, prefixEnd) === item;
-            const endsWithSuffix = textarea.value.slice(suffixStart, suffixEnd) === item;
+            const beginsWithPrefix = textarea.value.slice(formattingStart, formattingStart + item.length) === item;
+            const endsWithSuffix = textarea.value.slice(formattingEnd - item.length, formattingEnd) === item;
             if (!beginsWithPrefix || !endsWithSuffix)
                 continue;
             if (item === formattingToUse) {
