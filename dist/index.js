@@ -661,10 +661,10 @@ function orderedList(textarea) {
     let lines = text.split('\n');
     let startOfLine, endOfLine;
     if (noInitialSelection) {
-        const linesBefore = textarea.value.slice(0, textarea.selectionStart).split(/\n/);
-        startOfLine = textarea.selectionStart - linesBefore[linesBefore.length - 1].length;
+        startOfLine = wordSelectionStart(textarea.value, textarea.selectionStart, true);
         endOfLine = wordSelectionEnd(textarea.value, textarea.selectionStart, true);
         textToUnstyle = textarea.value.slice(startOfLine, endOfLine);
+        lines = textToUnstyle.split('\n');
     }
     const linesToUnstyle = textToUnstyle.split('\n');
     const undoStyling = linesToUnstyle.every(line => orderedListRegex.test(line));
@@ -678,14 +678,23 @@ function orderedList(textarea) {
             textarea.selectionEnd = endOfLine;
         }
     }
+    else if (noInitialSelection && startOfLine != null && endOfLine != null) {
+        const currentSelection = textarea.selectionStart;
+        textarea.selectionStart = startOfLine;
+        textarea.selectionEnd = endOfLine;
+        lines = numberedLines(lines);
+        text = lines.join('\n');
+        const { newlinesToAppend, newlinesToPrepend } = newlinesToSurroundSelectedText(textarea);
+        const lengthDiff = lines[0].length - linesToUnstyle[0].length;
+        selectionStart = selectionEnd = currentSelection + lengthDiff + newlinesToAppend.length;
+        text = newlinesToAppend + text + newlinesToPrepend;
+    }
     else {
         lines = numberedLines(lines);
         text = lines.join('\n');
         const { newlinesToAppend, newlinesToPrepend } = newlinesToSurroundSelectedText(textarea);
         selectionStart = textarea.selectionStart + newlinesToAppend.length;
         selectionEnd = selectionStart + text.length;
-        if (noInitialSelection)
-            selectionStart = selectionEnd;
         text = newlinesToAppend + text + newlinesToPrepend;
     }
     return { text, selectionStart, selectionEnd };
