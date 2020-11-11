@@ -528,7 +528,6 @@ function insertText(textarea: HTMLTextAreaElement, {text, selectionStart, select
     } catch (error) {
       canInsertText = false
     }
-    textarea.contentEditable = 'false'
   }
 
   if (canInsertText && !textarea.value.slice(0, textarea.selectionStart).endsWith(text)) {

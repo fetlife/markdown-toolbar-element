@@ -411,7 +411,6 @@ function insertText(textarea, { text, selectionStart, selectionEnd }) {
         catch (error) {
             canInsertText = false;
         }
-        textarea.contentEditable = 'false';
     }
     if (canInsertText && !textarea.value.slice(0, textarea.selectionStart).endsWith(text)) {
         canInsertText = false;
