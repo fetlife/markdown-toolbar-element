@@ -15,7 +15,8 @@
     "pretest": "npm run build",
     "test": "karma start test/karma.config.cjs",
     "prepublishOnly": "npm run build",
-    "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'"
+    "postpublish": "npm publish --ignore-scripts --@github:registry='https://npm.pkg.github.com'",
+    "postinstall": "tsc"
   },
   "keywords": [
     "custom-element",
